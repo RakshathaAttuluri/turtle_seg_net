@@ -1,0 +1,6 @@
+checkpt/
+dataset/
+wandb/
+__pycache__/
+turtle.png
+.env/
