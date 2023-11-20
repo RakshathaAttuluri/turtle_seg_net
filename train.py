@@ -11,7 +11,7 @@ from visualize import visualize
 
 VAL_SPLIT = 0.3
 BS = 4
-EPS = 2
+EPS = 1
 LR = 0.01
 WD = 0.01
 
@@ -47,7 +47,7 @@ def train(epoch, model, train_loader, optimizer, loss_fn, logger):
         img, mask = batch
         optimizer.zero_grad()
 
-        pred_mask = nn.functional.softmax(model(img), dim=1)
+        pred_mask = model(img)
         loss = loss_fn(pred_mask, mask)
         loss.backward()
 
@@ -75,7 +75,7 @@ def validate(epoch, model, val_loader, loss_fn, logger, log_visuals=False):
                             total=len(val_loader),
                             desc=f'Val: {epoch}/{EPS}'):
             img, mask = batch
-            pred_mask = nn.functional.softmax(model(img), dim=1)
+            pred_mask = model(img)
             running_loss += loss_fn(pred_mask, mask)
 
             # Visualize images to log.
