@@ -12,7 +12,7 @@ class TurtleDataset(Dataset):
                  transform=None) -> None:
         super().__init__()
         self.bg_img_paths = glob.glob(f'{bg_img_dir}/*.png')
-        self.fg_img_path = Image.open(fg_img_path).resize((256, 256))
+        self.fg_img = Image.open(fg_img_path).resize((256, 256))
         self.transform = transform
         if transform == None:
             self.transform = transforms.Compose([
@@ -31,11 +31,11 @@ class TurtleDataset(Dataset):
     def _random_paste(self, background_image, min_scale=0.25, max_scale=0.65):
         """Randomly scales and pastes the turtle image onto the background image"""
     
-        w, h = self.fg_img_path.size
+        w, h = self.fg_img.size
         # first, we will randomly downscale the turtle image
         new_w = int(random.uniform(min_scale, max_scale) * w)
         new_h = int(random.uniform(min_scale, max_scale) * h)
-        resized_turtle_image = self.fg_img_path.resize((new_w, new_h))
+        resized_turtle_image = self.fg_img.resize((new_w, new_h))
 
         # second, will randomly choose the locations where to paste the new image
         start_w = random.randint(0, w - new_w)
