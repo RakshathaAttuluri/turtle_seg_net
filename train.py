@@ -7,6 +7,7 @@ from torch.utils.data import random_split, DataLoader
 from tqdm import tqdm
 from dataset import TurtleDataset
 from unet.unet_model import Unet
+from visualize import visualize
 
 VAL_SPLIT = 0.3
 BS = 4
@@ -24,11 +25,14 @@ def initialize_logging(name: str):
 
 
 def get_dataloaders():
+    # Initialize and visualize dataset.
     data = TurtleDataset('dataset', 'turtle.png')
     val_sz = int(len(data) * VAL_SPLIT)
     train_sz = int(len(data) - val_sz)
     train_dataset, val_dataset = random_split(data, [train_sz, val_sz])
-    
+    visualize(*train_dataset[5])
+
+    # Initialize dataloader.
     train_loader = DataLoader(train_dataset, batch_size=BS,
                               shuffle=True, pin_memory=True)
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
@@ -58,26 +62,37 @@ def train(epoch, model, train_loader, optimizer, loss_fn, logger):
             running_loss = 0
 
 
-def validate(epoch, model, val_loader, loss_fn, logger):
+def validate(epoch, model, val_loader, loss_fn, logger, log_visuals=False):
     model.eval()
+
+    # Get random images to log.
+    log_idx = torch.randint(0, len(val_loader), (2,))
+    log_images = []
+
     running_loss = 0
     with torch.no_grad():
         for i, batch in tqdm(enumerate(val_loader),
-                            total=len(val_loader), desc=f'Val: {epoch}/{EPS}'):
+                            total=len(val_loader),
+                            desc=f'Val: {epoch}/{EPS}'):
             img, mask = batch
             pred_mask = nn.functional.softmax(model(img), dim=1)
             running_loss += loss_fn(pred_mask, mask)
+
+            # Visualize images to log.
+            if log_visuals and i in log_idx:
+                log_images.append(visualize(img, mask, pred_mask))
 
     avg_val_loss = running_loss / len(val_loader)
     logger.log({
         'val_loss': avg_val_loss,
         'step': len(val_loader),
-        'epoch': epoch
+        'epoch': epoch,
+        'images': [wandb.Image(image) for image in log_images]
     })
     return avg_val_loss
 
 
-def run_training(train_loader, val_loader, logger):
+def run_training(train_loader, val_loader, logger, log_visual=False):
     model = Unet()
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WD)
     loss_fn = nn.BCELoss()
@@ -87,7 +102,8 @@ def run_training(train_loader, val_loader, logger):
     best_loss = torch.inf
     for epoch in range(EPS):
         train(epoch, model, train_loader, optimizer, loss_fn, logger)
-        val_loss = validate(epoch, model, val_loader, loss_fn, logger)
+        val_loss = validate(epoch, model, val_loader,
+                            loss_fn, logger, log_visual)
         if val_loss < best_loss:
             best_loss = val_loss
             model_path = f'checkpt/unet_{timestamp}_{epoch}.pt'
@@ -97,4 +113,4 @@ def run_training(train_loader, val_loader, logger):
 if __name__ == '__main__':
     logger = initialize_logging('BinSS')
     train_loader, val_loader = get_dataloaders()
-    run_training(train_loader, val_loader, logger)
+    run_training(train_loader, val_loader, logger, log_visual=True)
