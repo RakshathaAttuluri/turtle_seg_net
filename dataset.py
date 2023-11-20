@@ -62,8 +62,6 @@ class TurtleDataset(Dataset):
 
     def _prep_canvas_image(self, seg_mask):
         seg_mask = transforms.ToTensor()(seg_mask)
-        seg_mask = (seg_mask[-1:] > 0).to(torch.int64)
+        seg_mask = (seg_mask[-1:] > 0).to(torch.float32)
 
-        seg_mask = nn.functional.one_hot(
-            seg_mask, 2).squeeze().permute(2, 0, 1).to(torch.float32)
         return seg_mask

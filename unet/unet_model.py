@@ -45,7 +45,7 @@ class Unet(nn.Module):
         self.conv_blk_18 = ConvBlock(64, 64)
 
         # Final conv.
-        self.conv_out = ConvOut(64, 2)
+        self.conv_out = ConvOut(64, 1)
 
     def forward(self, x):
         intrim_feats = deque()
