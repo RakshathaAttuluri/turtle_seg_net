@@ -20,6 +20,5 @@ def visualize(image, mask, pred_mask=None):
     img_buf = io.BytesIO()
     plt.savefig(img_buf, format='png')
     img_buf = Image.open(img_buf)
-    img_buf.show()
 
     return img_buf
