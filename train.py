@@ -106,7 +106,7 @@ def run_training(device, train_loader, val_loader, logger, log_img_idx=[]):
                             loss_fn, logger, log_img_idx)
         if val_loss < best_loss:
             best_loss = val_loss
-            model_path = f'checkpt/unet_{timestamp}_{epoch}.pt'
+            model_path = f'checkpt/unet_{timestamp}_best.pt'
             torch.save(model.state_dict(), model_path)
 
 
