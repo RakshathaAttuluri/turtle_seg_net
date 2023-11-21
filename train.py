@@ -63,13 +63,10 @@ def train(device, epoch, model, train_loader, optimizer, loss_fn, logger):
             running_loss = 0
 
 
-def validate(device, epoch, model, val_loader, loss_fn, logger, log_visuals=False):
+def validate(device, epoch, model, val_loader, loss_fn, logger, log_img_idx=[]):
     model.eval()
 
-    # Get random images to log.
-    log_idx = torch.randint(0, len(val_loader), (2,))
     log_images = []
-
     running_loss = 0
     with torch.no_grad():
         for i, batch in tqdm(enumerate(val_loader),
@@ -81,7 +78,7 @@ def validate(device, epoch, model, val_loader, loss_fn, logger, log_visuals=Fals
             running_loss += loss_fn(pred_mask, mask)
 
             # Visualize images to log.
-            if log_visuals and i in log_idx:
+            if i in log_img_idx:
                 log_images.append(visualize(img, mask, pred_mask))
 
     avg_val_loss = running_loss / len(val_loader)
@@ -94,7 +91,7 @@ def validate(device, epoch, model, val_loader, loss_fn, logger, log_visuals=Fals
     return avg_val_loss
 
 
-def run_training(device, train_loader, val_loader, logger, log_visual=False):
+def run_training(device, train_loader, val_loader, logger, log_img_idx=[]):
     model = Unet().to(device)
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WD)
     loss_fn = nn.BCEWithLogitsLoss()
@@ -106,7 +103,7 @@ def run_training(device, train_loader, val_loader, logger, log_visual=False):
         train(device, epoch, model, train_loader,
               optimizer, loss_fn, logger)
         val_loss = validate(device, epoch, model, val_loader,
-                            loss_fn, logger, log_visual)
+                            loss_fn, logger, log_img_idx)
         if val_loss < best_loss:
             best_loss = val_loss
             model_path = f'checkpt/unet_{timestamp}_{epoch}.pt'
@@ -116,5 +113,7 @@ def run_training(device, train_loader, val_loader, logger, log_visual=False):
 if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logger = initialize_logging('BinSS')
+    # Get random images to log.
     train_loader, val_loader = get_dataloaders()
-    run_training(device, train_loader, val_loader, logger, log_visual=True)
+    log_img_idx = torch.randint(0, len(val_loader), (2,))
+    run_training(device, train_loader, val_loader, logger, log_img_idx=log_img_idx)
