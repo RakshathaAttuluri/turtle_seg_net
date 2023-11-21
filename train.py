@@ -39,12 +39,13 @@ def get_dataloaders():
     return (train_loader, val_loader)
 
 
-def train(epoch, model, train_loader, optimizer, loss_fn, logger):
+def train(device, epoch, model, train_loader, optimizer, loss_fn, logger):
     model.train()
     running_loss = 0
     for i, batch in tqdm(enumerate(train_loader),
                             total=len(train_loader), desc=f'Train: {epoch}/{EPS}'):
         img, mask = batch
+        img, mask = img.to(device), mask.to(device)
         optimizer.zero_grad()
 
         pred_mask = model(img)
@@ -62,7 +63,7 @@ def train(epoch, model, train_loader, optimizer, loss_fn, logger):
             running_loss = 0
 
 
-def validate(epoch, model, val_loader, loss_fn, logger, log_visuals=False):
+def validate(device, epoch, model, val_loader, loss_fn, logger, log_visuals=False):
     model.eval()
 
     # Get random images to log.
@@ -75,6 +76,7 @@ def validate(epoch, model, val_loader, loss_fn, logger, log_visuals=False):
                             total=len(val_loader),
                             desc=f'Val: {epoch}/{EPS}'):
             img, mask = batch
+            img, mask = img.to(device), mask.to(device)
             pred_mask = model(img)
             running_loss += loss_fn(pred_mask, mask)
 
@@ -92,8 +94,8 @@ def validate(epoch, model, val_loader, loss_fn, logger, log_visuals=False):
     return avg_val_loss
 
 
-def run_training(train_loader, val_loader, logger, log_visual=False):
-    model = Unet()
+def run_training(device, train_loader, val_loader, logger, log_visual=False):
+    model = Unet().to(device)
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WD)
     loss_fn = nn.BCELoss()
 
@@ -101,8 +103,9 @@ def run_training(train_loader, val_loader, logger, log_visual=False):
     print('Starting training...')
     best_loss = torch.inf
     for epoch in range(EPS):
-        train(epoch, model, train_loader, optimizer, loss_fn, logger)
-        val_loss = validate(epoch, model, val_loader,
+        train(device, epoch, model, train_loader,
+              optimizer, loss_fn, logger)
+        val_loss = validate(device, epoch, model, val_loader,
                             loss_fn, logger, log_visual)
         if val_loss < best_loss:
             best_loss = val_loss
@@ -111,6 +114,7 @@ def run_training(train_loader, val_loader, logger, log_visual=False):
 
 
 if __name__ == '__main__':
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logger = initialize_logging('BinSS')
     train_loader, val_loader = get_dataloaders()
-    run_training(train_loader, val_loader, logger, log_visual=True)
+    run_training(device, train_loader, val_loader, logger, log_visual=True)
