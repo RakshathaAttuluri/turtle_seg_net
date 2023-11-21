@@ -2,5 +2,6 @@ checkpt/
 dataset/
 wandb/
 __pycache__/
-turtle.png
+*.png
 .env/
+.vscode/
