@@ -97,7 +97,6 @@ class Unet(nn.Module):
         x = self.conv_blk_18(x)
 
         x = self.conv_out(x)
-        x = nn.functional.softmax(x, dim=1)
         return x
 
 

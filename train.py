@@ -97,7 +97,7 @@ def validate(device, epoch, model, val_loader, loss_fn, logger, log_visuals=Fals
 def run_training(device, train_loader, val_loader, logger, log_visual=False):
     model = Unet().to(device)
     optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WD)
-    loss_fn = nn.BCELoss()
+    loss_fn = nn.BCEWithLogitsLoss()
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     print('Starting training...')
