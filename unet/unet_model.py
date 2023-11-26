@@ -6,6 +6,12 @@ from .unet_parts import *
 
 
 class Unet(nn.Module):
+    """ Unet model for binary semantic segmentation.
+
+    References:
+        Adapted from Unet - Conventional Network for bio-medical images
+        paper ```https://arxiv.org/pdf/1505.04597.pdf```
+    """
 
     def __init__(self) -> None:
         super().__init__()
