@@ -8,25 +8,30 @@ from tqdm import tqdm
 from dataset import TurtleDataset
 from unet.unet_model import Unet
 from visualize import visualize
+from logger import Logger
 
 VAL_SPLIT = 0.3
 BS = 8
 EPS = 100
 LR = 0.001
 WD = 0.01
+USE_WANDB = False
 
 
 def initialize_logging(name: str):
-    experiment = wandb.init(project=name)
-    experiment.config.update(
-        dict(epochs=EPS, batch_size=BS, learning_rate=LR)
-    )
-    return experiment
+    if USE_WANDB:
+        experiment = wandb.init(project=name)
+        experiment.config.update(
+            dict(epochs=EPS, batch_size=BS, learning_rate=LR)
+        )
+        return experiment
+    else:
+        return Logger(name)
 
 
 def get_dataloaders():
     # Initialize and visualize dataset.
-    data = TurtleDataset('dataset', 'turtle.png')
+    data = TurtleDataset('dataset', 'dataset/others/turtle.png')
     val_sz = int(len(data) * VAL_SPLIT)
     train_sz = int(len(data) - val_sz)
     train_dataset, val_dataset = random_split(data, [train_sz, val_sz])
