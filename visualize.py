@@ -21,4 +21,5 @@ def visualize(image, mask, pred_mask=None):
     plt.savefig(img_buf, format='png')
     img_buf = Image.open(img_buf)
 
+    plt.close()
     return img_buf
