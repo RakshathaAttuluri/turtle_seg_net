@@ -10,9 +10,9 @@ from unet.unet_model import Unet
 from visualize import visualize
 
 VAL_SPLIT = 0.3
-BS = 4
-EPS = 1
-LR = 0.01
+BS = 8
+EPS = 100
+LR = 0.001
 WD = 0.01
 
 
