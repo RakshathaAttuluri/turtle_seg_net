@@ -39,11 +39,10 @@ def run_inference(device, checkpt_file_path, image):
 
     # Resize images back to their sizes.
     im = transforms.functional.resize(im, size=image.size)
-    pred_mask = transforms.functional.resize(pred_mask, size=image.size)
-    res = visualize(im, pred_mask)
-    res.save('res.png')
+    pred_mask = transforms.functional.resize(
+        pred_mask, size=image.size).detach().mul(255).clamp(0, 255)
 
-    return pred_mask
+    return im, pred_mask
 
 
 if __name__ == '__main__':
