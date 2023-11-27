@@ -9,6 +9,16 @@ from visualize import visualize
 
 
 def run_inference(device, checkpt_file_path, image):
+    """ Function to run inference using Unet model on a given image.`
+
+    Arguments:
+        device -- cpu or cuda device to run on
+        checkpt_file_path -- Path the Unet model weights
+        image -- PIL Image to run inference on
+
+    Returns:
+        Tuple of image and predicted mask.
+    """
     # Load model.
     model = Unet().to(device)
     model.load_state_dict(torch.load(checkpt_file_path))
