@@ -21,7 +21,8 @@ def run_inference(device, checkpt_file_path, image):
     """
     # Load model.
     model = Unet().to(device)
-    model.load_state_dict(torch.load(checkpt_file_path))
+    model.load_state_dict(torch.load(
+        checkpt_file_path, map_location=torch.device(device)))
     model.eval()
 
     # Initialize transforms.
